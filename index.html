@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" id="html-root" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <title>KSAU-HS | Healthcare Technology Management Services (HTMS)</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- SheetJS with Full Cell Styling (xlsx-js-style) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+  <!-- QRCode.js for Instant Mobile/Desktop QR Code Generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- html2pdf.js for Direct Official A4 PDF Download inside Sandboxed Preview -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Kufi+Arabic:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <script src="js/tailwind-config.js"></script>
+
+
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col selection:bg-ksau-600 selection:text-white">
+
+  <!-- Hidden file input to let Admin upload exact local images_2.jpg permanently -->
+  <input type="file" id="logo-file-input" accept="image/*" class="hidden" onchange="handleLogoFileUpload(event)" />
+
+  <!-- ================= OFFICIAL UNIVERSITY LOGIN SCREEN ================= -->
+  <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center ksau-mesh-bg p-4 overflow-y-auto">
+    <!-- Top Language Switcher -->
+    <div class="fixed top-5 right-5 z-50">
+      <button onclick="toggleLanguage()" class="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-md text-xs font-bold tracking-wide transition shadow-lg">
+        <i data-lucide="globe" class="w-4 h-4 text-ksau-goldbright"></i>
+        <span id="login-lang-btn">العربية</span>
+      </button>
+    </div>
+
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-white/20 animate-fade-up my-auto">
+      <!-- Official Header Banner -->
+      <div class="bg-gradient-to-b from-ksau-800 via-ksau-700 to-ksau-800 px-6 pt-8 pb-6 text-center text-white relative border-b-4 border-ksau-goldbright">
+        <div class="w-28 h-28 mx-auto mb-3 rounded-full bg-white p-1 shadow-xl animate-float cursor-pointer relative group" onclick="triggerLogoUpload()" title="Official KSAU-HS Emblem">
+          <div class="ksau-logo-slot w-full h-full rounded-full overflow-hidden flex items-center justify-center"></div>
+        </div>
+        <p class="font-arabic text-base font-bold text-ksau-goldlight tracking-wide mb-1">جامعة الملك سعود بن عبد العزيز للعلوم الصحية</p>
+        <h1 class="text-base font-extrabold tracking-tight uppercase text-white" data-i18n="uniName">King Saud bin Abdulaziz University for Health Sciences</h1>
+        <p class="text-xs text-emerald-200 mt-1 font-medium" data-i18n="htmsSubtitle">Healthcare Technology Management Services (HTMS)</p>
+      </div>
+
+      <!-- Clean Official Sign-In Form (No Exposed Passwords or Dev Badges) -->
+      <form id="login-form" onsubmit="handleLogin(event)" class="p-7 space-y-5 bg-white">
+        <div class="border-b border-slate-100 pb-3">
+          <h2 class="text-lg font-extrabold text-slate-900" data-i18n="portalSignIn">HTMS Portal Sign In</h2>
+          <p class="text-xs text-slate-500 mt-0.5" data-i18n="portalSignInSub">Enter your authorized university credentials to access the system</p>
+        </div>
+
+        <div id="login-error" class="hidden p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex items-center gap-2">
+          <i data-lucide="alert-circle" class="w-4 h-4 shrink-0"></i>
+          <span id="login-error-text">Invalid username or password.</span>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5" data-i18n="usernameLabel">Username</label>
+          <div class="relative">
+            <i data-lucide="user" class="w-4 h-4 text-slate-400 absolute top-3.5 left-3.5 rtl:left-auto rtl:right-3.5"></i>
+            <input type="text" id="login-username" required autocomplete="username"
+              class="w-full pl-10 pr-4 rtl:pl-4 rtl:pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ksau-600 focus:bg-white transition"
+              placeholder="Enter username" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5" data-i18n="passwordLabel">Password</label>
+          <div class="relative">
+            <i data-lucide="lock" class="w-4 h-4 text-slate-400 absolute top-3.5 left-3.5 rtl:left-auto rtl:right-3.5"></i>
+            <input type="password" id="login-password" required autocomplete="current-password"
+              class="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ksau-600 focus:bg-white transition"
+              placeholder="••••••••" />
+            <button type="button" onclick="togglePasswordVisibility()" class="absolute top-3 right-3.5 rtl:right-auto rtl:left-3.5 text-slate-400 hover:text-slate-600">
+              <i data-lucide="eye" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="-mt-2 text-right rtl:text-left">
+          <button type="button" onclick="showResetPage(true)" class="text-xs font-semibold text-ksau-600 hover:underline" data-i18n="forgotPassword">Forgot your password?</button>
+        </div>
+
+        <button type="submit" class="w-full py-3 px-4 bg-ksau-600 hover:bg-ksau-700 active:bg-ksau-800 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition flex items-center justify-center gap-2 text-sm">
+          <i data-lucide="log-in" class="w-4 h-4"></i>
+          <span data-i18n="signInBtn">Authenticate & Enter Portal</span>
+        </button>
+
+        <div class="pt-3 border-t border-slate-100 text-center">
+          <p class="text-[11px] text-slate-400 font-medium" data-i18n="loginFooter">College of Applied Medical Sciences • Central Region • Riyadh</p>
+        </div>
+      </form>
+
+      <!-- ================= PASSWORD RESET PAGE (open with #reset-password) ================= -->
+      <form id="reset-form" onsubmit="submitPasswordReset(event)" class="hidden p-7 space-y-4 bg-white">
+        <div class="border-b border-slate-100 pb-3">
+          <h2 class="text-lg font-extrabold text-slate-900" data-i18n="resetTitle">Reset your password</h2>
+          <p class="text-xs text-slate-500 mt-0.5" data-i18n="resetSub">Enter your username and the recovery code from the skills laboratory custodian, then choose a new password.</p>
+        </div>
+        <p id="reset-error" class="hidden p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold"></p>
+        <div>
+          <label for="reset-username" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5" data-i18n="usernameLabel">Username</label>
+          <input type="text" id="reset-username" required autocomplete="username" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ksau-600 focus:bg-white transition" />
+        </div>
+        <div>
+          <label for="reset-code" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5" data-i18n="recoveryCodeLabel">Recovery code</label>
+          <input type="text" id="reset-code" required autocomplete="one-time-code" spellcheck="false" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-ksau-600 focus:bg-white transition" placeholder="XXXX-XXXX" />
+        </div>
+        <div>
+          <label for="reset-new" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5" data-i18n="newPasswordLabel">New password</label>
+          <input type="password" id="reset-new" required minlength="8" autocomplete="new-password" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ksau-600 focus:bg-white transition" />
+        </div>
+        <div>
+          <label for="reset-confirm" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5" data-i18n="confirmPasswordLabel">Confirm new password</label>
+          <input type="password" id="reset-confirm" required autocomplete="new-password" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ksau-600 focus:bg-white transition" />
+        </div>
+        <button type="submit" class="w-full py-3 px-4 bg-ksau-600 hover:bg-ksau-700 text-white font-bold rounded-xl shadow-lg transition flex items-center justify-center gap-2 text-sm">
+          <i data-lucide="key-round" class="w-4 h-4"></i>
+          <span data-i18n="resetBtn">Set new password</span>
+        </button>
+        <div class="text-center">
+          <button type="button" onclick="showResetPage(false)" class="text-xs font-semibold text-ksau-600 hover:underline" data-i18n="backToSignIn">Back to sign in</button>
+        </div>
+      </form>
+
+      <div id="reset-done" class="hidden p-7 space-y-4 bg-white">
+        <div class="border-b border-slate-100 pb-3">
+          <h2 class="text-lg font-extrabold text-slate-900" data-i18n="resetDoneTitle">Password changed</h2>
+          <p class="text-xs text-slate-500 mt-0.5" data-i18n="resetDoneSub">You can now sign in with your new password. Your old recovery code no longer works. Save this new one somewhere safe:</p>
+        </div>
+        <p id="reset-new-code" class="text-center text-2xl font-mono font-extrabold tracking-widest text-ksau-800 bg-ksau-50 border border-ksau-200 rounded-xl py-3 select-all"></p>
+        <button type="button" onclick="finishPasswordReset()" class="w-full py-3 px-4 bg-ksau-600 hover:bg-ksau-700 text-white font-bold rounded-xl shadow-lg transition text-sm" data-i18n="backToSignIn">Back to sign in</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MAIN APPLICATION SHELL ================= -->
+  <div id="app-shell" class="hidden flex-1 flex flex-col min-h-screen">
+    <!-- Top University Header -->
+    <header class="bg-gradient-to-r from-ksau-900 via-ksau-800 to-ksau-900 text-white border-b-4 border-ksau-goldbright sticky top-0 z-30 shadow-xl">
+      <div class="max-w-[1600px] mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-4">
+        <!-- Brand & Emblem -->
+        <div class="flex items-center gap-3.5">
+          <div onclick="triggerLogoUpload()" class="w-14 h-14 rounded-full bg-white p-0.5 shadow-md shrink-0 cursor-pointer hover:scale-105 transition relative group" title="Click to upload custom emblem file if desired">
+            <div class="ksau-logo-slot w-full h-full rounded-full overflow-hidden flex items-center justify-center"></div>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <p class="font-arabic text-sm font-bold text-ksau-goldlight">جامعة الملك سعود بن عبد العزيز للعلوم الصحية</p>
+              <span class="hidden sm:inline-block text-xs px-2 py-0.5 rounded-full bg-white/10 text-emerald-200 font-semibold border border-white/15">HTMS</span>
+            </div>
+            <h1 class="text-sm sm:text-base font-extrabold tracking-tight text-white" data-i18n="headerTitle">KSAU-HS • Healthcare Technology Management Services</h1>
+            <p class="text-[11px] text-emerald-200/90 font-medium" data-i18n="headerSub">Central Region • College of Applied Medical Sciences (Male) • Respiratory Therapy Skills Labs</p>
+          </div>
+        </div>
+
+        <!-- Right Controls & User Profile -->
+        <div class="flex flex-wrap items-center gap-2 sm:gap-2.5">
+          <!-- Logged-in Staff Pill -->
+          <div class="flex items-center gap-2.5 bg-white/10 border border-white/15 rounded-xl px-3 py-1.5 backdrop-blur-sm">
+            <div id="user-avatar" class="w-8 h-8 rounded-lg bg-ksau-goldbright text-ksau-950 font-extrabold text-xs flex items-center justify-center shadow">
+              AM
+            </div>
+            <div class="leading-tight">
+              <div class="flex items-center gap-1.5">
+                <span id="user-display-name" class="text-xs font-bold text-white">Abdulrahman Mufti</span>
+                <span id="user-role-badge" class="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-ksau-goldbright/30 text-ksau-goldlight border border-ksau-goldbright/40">ADMIN</span>
+              </div>
+              <p id="user-badge-line" class="text-[10px] text-emerald-200 font-mono">Badge #919670</p>
+            </div>
+          </div>
+
+          <!-- Language Toggle -->
+          <button onclick="toggleLanguage()" class="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/15 text-xs font-bold flex items-center gap-1.5 transition" title="Switch Language / تغيير اللغة">
+            <i data-lucide="languages" class="w-4 h-4 text-ksau-goldbright"></i>
+            <span id="header-lang-btn">العربية</span>
+          </button>
+
+          <!-- QR Access Modal Trigger -->
+          <button onclick="openQrModal()" class="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/15 text-xs font-bold flex items-center gap-1.5 transition">
+            <i data-lucide="qr-code" class="w-4 h-4 text-ksau-goldbright"></i>
+            <span class="hidden md:inline" data-i18n="qrAccessBtn">QR Access</span>
+          </button>
+
+          <!-- Pro Excel (.xlsx) Export -->
+          <button onclick="exportProExcel()" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-md transition border border-emerald-400/30">
+            <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+            <span data-i18n="exportExcelBtn">Export Excel (.xlsx)</span>
+          </button>
+
+          <!-- Official Printable Report & PDF -->
+          <button onclick="openReportModal()" class="px-3.5 py-2 rounded-xl bg-ksau-goldbright hover:bg-amber-500 text-ksau-950 text-xs font-extrabold flex items-center gap-1.5 shadow-md transition">
+            <i data-lucide="printer" class="w-4 h-4"></i>
+            <span data-i18n="officialReportBtn">Official Report / Print</span>
+          </button>
+
+          <!-- Change My Password -->
+          <button onclick="openPasswordModal()" class="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/15 transition" title="Change password">
+            <i data-lucide="key-round" class="w-4 h-4"></i>
+          </button>
+
+          <!-- Sign Out -->
+          <button onclick="handleLogout()" class="p-2 rounded-xl bg-red-500/20 hover:bg-red-500/30 text-red-200 border border-red-400/30 transition" title="Sign Out">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+      <!-- KPI Summary Ribbon -->
+      <section class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
+        <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400" data-i18n="kpiTotalSystems">Parent Systems</p>
+            <p id="kpi-total" class="text-2xl font-extrabold text-slate-900 mt-1">50</p>
+            <p class="text-[11px] text-slate-500 mt-0.5" data-i18n="kpiVerifiedAssets">HTMS Tagged Units</p>
+          </div>
+          <div class="w-11 h-11 rounded-2xl bg-ksau-50 text-ksau-600 flex items-center justify-center">
+            <i data-lucide="cpu" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400" data-i18n="kpiSubComponents">Sub-Components</p>
+            <p id="kpi-subs" class="text-2xl font-extrabold text-indigo-600 mt-1">38</p>
+            <p class="text-[11px] text-slate-500 mt-0.5" data-i18n="kpiAttachedModules">Simpads, Racks & Modules</p>
+          </div>
+          <div class="w-11 h-11 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+            <i data-lucide="layers" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400" data-i18n="kpiOperational">Operational</p>
+            <p id="kpi-operational" class="text-2xl font-extrabold text-emerald-600 mt-1">47</p>
+            <p class="text-[11px] text-emerald-600 font-semibold mt-0.5" data-i18n="kpiReadyForLab">Ready for Clinical Skills</p>
+          </div>
+          <div class="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400" data-i18n="kpiMaintenance">Under Maintenance</p>
+            <p id="kpi-maint" class="text-2xl font-extrabold text-amber-600 mt-1">2</p>
+            <p class="text-[11px] text-amber-600 font-semibold mt-0.5" data-i18n="kpiScheduledPM">Scheduled PM / Check</p>
+          </div>
+          <div class="w-11 h-11 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
+            <i data-lucide="wrench" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400" data-i18n="kpiContingency">Contingency / Fault</p>
+            <p id="kpi-fault" class="text-2xl font-extrabold text-rose-600 mt-1">1</p>
+            <p class="text-[11px] text-rose-600 font-semibold mt-0.5" data-i18n="kpiActiveBackup">Backup Unit Assigned</p>
+          </div>
+          <div class="w-11 h-11 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center">
+            <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400" data-i18n="kpiLabsCount">Active Skills Labs</p>
+            <p id="kpi-labs" class="text-2xl font-extrabold text-ksau-700 mt-1">2</p>
+            <p class="text-[11px] text-slate-500 mt-0.5" data-i18n="kpiCentralRegion">CAMS-Male • Central</p>
+          </div>
+          <div class="w-11 h-11 rounded-2xl bg-ksau-50 text-ksau-700 flex items-center justify-center">
+            <i data-lucide="building-2" class="w-5 h-5"></i>
+          </div>
+        </div>
+      </section>
+
+      <!-- Lab Selector Cards & Dynamic Lab Creator -->
+      <section class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+          <div class="flex items-center gap-2">
+            <i data-lucide="flask-conical" class="w-4 h-4 text-ksau-600"></i>
+            <h2 class="text-xs font-extrabold uppercase tracking-wider text-slate-700" data-i18n="selectLabHeading">Respiratory Therapy Skills Laboratories (Filter by Lab)</h2>
+          </div>
+          <button id="btn-create-lab" onclick="openLabModal()" class="px-3 py-1.5 rounded-xl bg-ksau-50 hover:bg-ksau-100 text-ksau-700 border border-ksau-200 text-xs font-bold flex items-center gap-1.5 transition">
+            <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+            <span data-i18n="createNewLabBtn">+ Create New Lab</span>
+          </button>
+        </div>
+        <div id="lab-Zero-cards" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3"></div>
+      </section>
+
+      <!-- Navigation Tabs & Primary Action Bar -->
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="inline-flex p-1.5 rounded-2xl bg-slate-200/80 border border-slate-300/60">
+          <button onclick="switchMainTab('inventory')" id="tab-btn-inventory" class="px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 transition bg-white text-ksau-800 shadow-sm">
+            <i data-lucide="clipboard-list" class="w-4 h-4"></i>
+            <span data-i18n="tabInventory">Medical Equipment Inventory</span>
+            <span id="badge-tab-inv" class="px-1.5 py-0.5 text-[10px] rounded-full bg-ksau-100 text-ksau-800">50</span>
+          </button>
+          <button onclick="switchMainTab('contingency')" id="tab-btn-contingency" class="px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 transition text-slate-600 hover:text-slate-900">
+            <i data-lucide="shield-alert" class="w-4 h-4"></i>
+            <span data-i18n="tabContingency">Contingency & Maintenance Log</span>
+            <span id="badge-tab-log" class="px-1.5 py-0.5 text-[10px] rounded-full bg-amber-100 text-amber-800">3</span>
+          </button>
+          <button onclick="switchMainTab('staff')" id="tab-btn-staff" class="px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 transition text-slate-600 hover:text-slate-900">
+            <i data-lucide="users" class="w-4 h-4"></i>
+            <span data-i18n="tabStaff">Staff Credentials & Permissions</span>
+            <span id="badge-tab-staff" class="px-1.5 py-0.5 text-[10px] rounded-full bg-slate-300 text-slate-800">1</span>
+          </button>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <!-- Expand/Collapse All Subcomponents -->
+          <button onclick="toggleExpandAllSubs()" class="px-3 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold flex items-center gap-1.5 shadow-sm transition">
+            <i data-lucide="chevrons-up-down" class="w-4 h-4 text-indigo-600"></i>
+            <span id="expand-all-label" data-i18n="expandAllSubs">Expand All Sub-Components</span>
+          </button>
+
+          <!-- Add Equipment Button -->
+          <button id="btn-add-equipment" onclick="openEquipmentModal()" class="px-4 py-2 rounded-xl bg-ksau-600 hover:bg-ksau-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-md transition">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span data-i18n="addEquipmentBtn">+ Add Medical Equipment</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= TAB 1: EQUIPMENT INVENTORY VIEW ================= -->
+      <section id="view-inventory" class="space-y-4">
+        <!-- Search & Filter Bar -->
+        <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          <div class="lg:col-span-2 relative">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute top-3 left-3.5 rtl:left-auto rtl:right-3.5"></i>
+            <input type="text" id="search-input" oninput="renderInventory()"
+              class="w-full pl-10 pr-4 rtl:pl-4 rtl:pr-10 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-ksau-600 focus:bg-white"
+              data-i18n-placeholder="searchPlaceholder"
+              placeholder="Search by Description, HTMS #, KU #, Model, or Sub-component..." />
+          </div>
+
+          <div>
+            <select id="filter-status" onchange="renderInventory()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-ksau-600">
+              <option value="ALL" data-i18n="allStatuses">All Operational Statuses</option>
+              <option value="Operational" data-i18n="statusOperational">Operational</option>
+              <option value="Maintenance" data-i18n="statusMaintenance">Under Maintenance</option>
+              <option value="Contingency / Fault" data-i18n="statusFault">Contingency / Fault</option>
+            </select>
+          </div>
+
+          <div>
+            <select id="filter-manufacturer" onchange="renderInventory()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-ksau-600">
+              <option value="ALL" data-i18n="allManufacturers">All Manufacturers</option>
+            </select>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="resetFilters()" class="w-full py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5">
+              <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+              <span data-i18n="resetFiltersBtn">Reset Filters</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Equipment Table Card -->
+        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+          <div class="overflow-x-auto custom-scroll">
+            <table class="w-full text-left rtl:text-right border-collapse">
+              <thead>
+                <tr class="bg-slate-900 text-white text-[11px] font-bold uppercase tracking-wider">
+                  <th class="py-3.5 px-4 w-24" data-i18n="thLabSn">Lab / SN</th>
+                  <th class="py-3.5 px-4" data-i18n="thDescription">Medical Equipment Description</th>
+                  <th class="py-3.5 px-4" data-i18n="thHtmsNo">HTMS No.</th>
+                  <th class="py-3.5 px-4" data-i18n="thKuNo">KU No.</th>
+                  <th class="py-3.5 px-4" data-i18n="thModel">Model</th>
+                  <th class="py-3.5 px-4" data-i18n="thManufacturer">Manufacturer</th>
+                  <th class="py-3.5 px-4" data-i18n="thStatus">Status</th>
+                  <th class="py-3.5 px-4 text-right rtl:text-left" data-i18n="thActions">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="inventory-tbody" class="divide-y divide-slate-200/70 text-xs"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 2: CONTINGENCY & MAINTENANCE LOGBOOK ================= -->
+      <section id="view-contingency" class="hidden space-y-4">
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm flex flex-wrap items-center justify-between gap-4">
+          <div class="flex items-center gap-3.5">
+            <div class="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center">
+              <i data-lucide="clipboard-check" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <h2 class="text-base font-extrabold text-slate-900" data-i18n="logbookHeading">HTMS Contingency & Corrective Maintenance Logbook</h2>
+              <p class="text-xs text-slate-500" data-i18n="logbookSub">Official record of equipment faults, backup unit allocations, calibration checks, and engineer sign-offs</p>
+            </div>
+          </div>
+          <button id="btn-new-contingency" onclick="openContingencyModal()" class="px-4 py-2.5 rounded-xl bg-ksau-600 hover:bg-ksau-700 text-white text-xs font-bold flex items-center gap-2 shadow-md transition">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            <span data-i18n="logNewIssueBtn">+ Log New Contingency Issue</span>
+          </button>
+        </div>
+
+        <div id="contingency-list" class="space-y-3"></div>
+      </section>
+
+      <!-- ================= TAB 3: STAFF CREDENTIALS & PERMISSIONS (RBAC) ================= -->
+      <section id="view-staff" class="hidden space-y-4">
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm flex flex-wrap items-center justify-between gap-4">
+          <div class="flex items-center gap-3.5">
+            <div class="w-12 h-12 rounded-2xl bg-ksau-50 border border-ksau-200 text-ksau-700 flex items-center justify-center">
+              <i data-lucide="shield-check" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <h2 class="text-base font-extrabold text-slate-900" data-i18n="staffHeading">Authorized Staff Credentials & Access Control</h2>
+              <p class="text-xs text-slate-500" data-i18n="staffSub">Create accounts for engineers, lab coordinators, or auditors and configure editing/adding permissions</p>
+            </div>
+          </div>
+          <button id="btn-create-staff" onclick="openStaffModal()" class="px-4 py-2.5 rounded-xl bg-ksau-600 hover:bg-ksau-700 text-white text-xs font-bold flex items-center gap-2 shadow-md transition">
+            <i data-lucide="user-plus" class="w-4 h-4"></i>
+            <span data-i18n="createStaffBtn">+ Create Staff Account</span>
+          </button>
+        </div>
+
+        <div id="staff-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      </section>
+
+      <!-- Official KSAU-HS Footer Sign-off Card -->
+      <footer class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm mt-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-center">
+          <div class="flex items-center gap-3.5">
+            <div class="w-14 h-14 rounded-full bg-white p-0.5 border border-slate-200 shrink-0">
+              <div class="ksau-logo-slot w-full h-full rounded-full overflow-hidden flex items-center justify-center"></div>
+            </div>
+            <div>
+              <p class="font-arabic text-xs font-bold text-ksau-700">جامعة الملك سعود بن عبد العزيز للعلوم الصحية</p>
+              <p class="text-xs font-extrabold text-slate-900">KSAU-HS HTMS DEPARTMENT</p>
+              <p class="text-[11px] text-slate-500">Central Region • Riyadh, Kingdom of Saudi Arabia</p>
+            </div>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+            <p class="text-[10px] font-extrabold uppercase tracking-wider text-ksau-700" data-i18n="endUserVerification">END-USER / LAB VERIFICATION</p>
+            <p class="text-xs font-bold text-slate-900 mt-0.5">Respiratory Therapy Skills Lab</p>
+            <p class="text-[11px] text-slate-600">College of Applied Medical Sciences - Male</p>
+            <p class="text-[11px] text-slate-500 font-mono mt-0.5">Labs CM-01-158 & CM-01-162 Verified</p>
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
+          <span>Regional HTMS Support: <strong class="text-slate-600">htms-ta-cr@ksau-hs.edu.sa</strong> (Central) • <strong class="text-slate-600">htms-ta-er@ksau-hs.edu.sa</strong> (Eastern) • <strong class="text-slate-600">htms-ta-wr@ksau-hs.edu.sa</strong> (Western)</span>
+          <button onclick="triggerLogoUpload()" class="text-ksau-600 hover:underline font-semibold">Update Official Logo Image</button>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <!-- ================= MODAL 1: OFFICIAL PRINTABLE REPORT & DIRECT PDF GENERATOR ================= -->
+  <div id="report-modal" class="fixed inset-0 z-50 hidden bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+    <div class="bg-slate-100 rounded-3xl shadow-2xl w-full max-w-6xl max-h-[94vh] flex flex-col overflow-hidden border border-white/20">
+      <!-- Top Control Bar -->
+      <div class="bg-ksau-900 text-white px-6 py-4 flex flex-wrap items-center justify-between gap-3 border-b border-ksau-goldbright">
+        <div class="flex items-center gap-3">
+          <i data-lucide="file-check-2" class="w-5 h-5 text-ksau-goldbright"></i>
+          <div>
+            <h3 class="text-sm font-extrabold" data-i18n="reportModalTitle">Official KSAU-HS HTMS Inventory & Contingency Report</h3>
+            <p class="text-[11px] text-emerald-200" data-i18n="reportModalSub">Formatted A4 Official University Document — Download directly as PDF or Print</p>
+          </div>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <select id="report-lab-select" onchange="renderPrintableReportContent()" class="px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white text-xs font-bold focus:outline-none">
+            <option value="ALL" class="text-slate-900">All Labs (CM-01-158 & CM-01-162)</option>
+          </select>
+          <button onclick="downloadOfficialPdf()" id="btn-download-pdf" class="px-4 py-2 rounded-xl bg-ksau-goldbright hover:bg-amber-400 text-ksau-950 text-xs font-extrabold flex items-center gap-1.5 shadow-lg transition">
+            <i data-lucide="download" class="w-4 h-4"></i>
+            <span data-i18n="downloadPdfBtn">Download Official PDF (.pdf)</span>
+          </button>
+          <button onclick="triggerSafePrint()" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-lg transition">
+            <i data-lucide="printer" class="w-4 h-4"></i>
+            <span data-i18n="printDocBtn">Print Document</span>
+          </button>
+          <button onclick="closeReportModal()" class="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Printable A4 Document Sheet -->
+      <div class="flex-1 overflow-y-auto p-4 sm:p-8 custom-scroll">
+        <div id="printable-report-area" class="bg-white text-slate-900 mx-auto max-w-[1000px] p-8 rounded-xl shadow-md border border-slate-200">
+          <!-- Official University Letterhead -->
+          <div class="border-b-2 border-ksau-700 pb-4 mb-5 flex items-center justify-between gap-4">
+            <div class="text-xs space-y-0.5">
+              <p class="font-extrabold text-slate-900 uppercase">Kingdom of Saudi Arabia</p>
+              <p class="font-bold text-ksau-700">King Saud bin Abdulaziz University for Health Sciences</p>
+              <p class="font-semibold text-slate-700">Healthcare Technology Management Services (HTMS)</p>
+              <p class="text-slate-500">Central Region • College of Applied Medical Sciences - Male</p>
+            </div>
+            <div class="w-20 h-20 shrink-0">
+              <div class="ksau-logo-slot w-full h-full rounded-full overflow-hidden flex items-center justify-center"></div>
+            </div>
+            <div class="text-right font-arabic text-xs space-y-0.5" dir="rtl">
+              <p class="font-extrabold text-slate-900">المملكة العربية السعودية</p>
+              <p class="font-bold text-ksau-700">جامعة الملك سعود بن عبد العزيز للعلوم الصحية</p>
+              <p class="font-semibold text-slate-700">إدارة خدمات تكنولوجيا الرعاية الصحية (HTMS)</p>
+              <p class="text-slate-500">المنطقة الوسطى • كلية العلوم الطبية التطبيقية - طلاب</p>
+            </div>
+          </div>
+
+          <div class="text-center mb-5">
+            <h2 class="text-base font-extrabold uppercase tracking-wide text-ksau-800 bg-ksau-50 py-2 px-4 rounded-lg border border-ksau-200 inline-block">
+              INVENTORY OF MEDICAL EQUIPMENT AT KSAU-HS — RESPIRATORY THERAPY SKILLS LAB
+            </h2>
+            <p id="report-lab-meta" class="text-xs font-bold text-slate-600 mt-1.5">Labs: CM-01-158 & CM-01-162 • Total Verified Systems: 50</p>
+          </div>
+
+          <!-- Dynamic Report Table -->
+          <div id="report-table-container" class="overflow-x-auto"></div>
+
+          <!-- Official Signature Blocks (Exact match to PDF Page 3) -->
+          <div class="mt-8 pt-4 border-t-2 border-slate-300 grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs">
+            <div class="border border-slate-300 rounded-lg p-4 bg-slate-50/50">
+              <p class="font-extrabold uppercase text-ksau-800 border-b border-slate-200 pb-1.5 mb-2">End-User Verification</p>
+              <p class="py-1"><strong>Name:</strong> Respiratory Therapy Skills Lab Coordinator</p>
+              <p class="py-1"><strong>College:</strong> Applied Medical Sciences - Male</p>
+              <p class="py-1"><strong>Date:</strong> ____ / ____ / 2026</p>
+              <p class="py-1 mt-2"><strong>Signature:</strong> ___________________________</p>
+            </div>
+          </div>
+
+          <p class="mt-4 text-[10px] text-center text-slate-500">
+            Note: For any concern, kindly coordinate with HTMS Dept. thru email address: <strong>htms-ta-cr@ksau-hs.edu.sa</strong> for Central Region; <strong>htms-ta-er@ksau-hs.edu.sa</strong> for Eastern Region and <strong>htms-ta-wr@ksau-hs.edu.sa</strong> for Western Region.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL 2: QR CODE MOBILE & DESKTOP ACCESS ================= -->
+  <div id="qr-modal" class="fixed inset-0 z-50 hidden bg-slate-900/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-200 animate-fade-up">
+      <div class="bg-ksau-800 text-white px-6 py-4 flex items-center justify-between border-b-2 border-ksau-goldbright">
+        <div class="flex items-center gap-2.5">
+          <i data-lucide="qr-code" class="w-5 h-5 text-ksau-goldbright"></i>
+          <h3 class="text-sm font-extrabold" data-i18n="qrModalTitle">Mobile & Tablet QR Portal Access</h3>
+        </div>
+        <button onclick="closeQrModal()" class="p-1.5 rounded-lg bg-white/10 hover:bg-white/20">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <div class="p-6 text-center space-y-4">
+        <div id="qr-poster-card" class="bg-gradient-to-b from-ksau-50 to-white p-5 rounded-2xl border-2 border-ksau-600 shadow-inner">
+          <div class="w-16 h-16 mx-auto mb-2">
+            <div class="ksau-logo-slot w-full h-full rounded-full overflow-hidden flex items-center justify-center"></div>
+          </div>
+          <p class="font-arabic text-xs font-bold text-ksau-800">جامعة الملك سعود بن عبد العزيز للعلوم الصحية</p>
+          <h4 class="text-xs font-extrabold text-slate-900 uppercase mt-0.5">KSAU-HS HTMS Lab Inventory</h4>
+          <p class="text-[11px] text-ksau-700 font-semibold">Labs CM-01-158 & CM-01-162 • CAMS-Male</p>
+          <div id="qrcode-box" class="my-4 flex justify-center bg-white p-3 rounded-xl border border-slate-200 inline-block mx-auto"></div>
+          <p class="text-[11px] text-slate-500 font-medium" data-i18n="scanQrPrompt">Scan with any smartphone or tablet camera to open the live inventory & contingency log</p>
+        </div>
+
+        <div class="text-left rtl:text-right">
+          <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1" data-i18n="qrUrlLabel">Portal URL Encoded in QR</label>
+          <div class="flex gap-2">
+            <input type="text" id="qr-url-input" oninput="regenerateQrCode()" class="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono" />
+            <button onclick="copyQrUrl()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold">Copy</button>
+          </div>
+        </div>
+
+        <button onclick="downloadQrDoorCard()" class="w-full py-2.5 bg-ksau-600 hover:bg-ksau-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow">
+          <i data-lucide="download" class="w-4 h-4"></i>
+          <span data-i18n="downloadQrPosterBtn">Download Printable Lab Door QR Card (.pdf)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL 3: ADD / EDIT MEDICAL EQUIPMENT ================= -->
+  <div id="equipment-modal" class="fixed inset-0 z-50 hidden bg-slate-900/75 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-200 my-auto animate-fade-up">
+      <div class="bg-ksau-800 text-white px-6 py-4 flex items-center justify-between border-b-2 border-ksau-goldbright">
+        <div class="flex items-center gap-2.5">
+          <i data-lucide="plus-square" class="w-5 h-5 text-ksau-goldbright"></i>
+          <h3 id="eq-modal-title" class="text-sm font-extrabold">Add / Edit Medical Equipment</h3>
+        </div>
+        <button onclick="closeEquipmentModal()" class="p-1.5 rounded-lg bg-white/10 hover:bg-white/20">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form id="equipment-form" onsubmit="saveEquipmentItem(event)" class="p-6 space-y-4 max-h-[82vh] overflow-y-auto custom-scroll">
+        <input type="hidden" id="eq-edit-id" />
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+          <div>
+            <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Lab Number *</label>
+            <select id="eq-lab" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold"></select>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Lab SN *</label>
+            <input type="number" id="eq-sn" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold" placeholder="e.g. 30" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Operational Status *</label>
+            <select id="eq-status" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold">
+              <option value="Operational">Operational</option>
+              <option value="Maintenance">Under Maintenance</option>
+              <option value="Contingency / Fault">Contingency / Fault</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Equipment Description *</label>
+          <input type="text" id="eq-desc" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold" placeholder="e.g. Ventilators" />
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1">HTMS No. *</label>
+            <input type="text" id="eq-htms" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono" placeholder="111315" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1">KU No. *</label>
+            <input type="text" id="eq-ku" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono" placeholder="84937" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Model *</label>
+            <input type="text" id="eq-model" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold" placeholder="Covidien 840+" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Manufacturer *</label>
+          <input type="text" id="eq-mfg" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold" placeholder="Puritan Bennett" />
+        </div>
+
+        <!-- Sub-Components Builder -->
+        <div class="pt-3 border-t border-slate-200">
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-xs font-extrabold text-slate-700">Attached Sub-Components (Simpads, Racks, Modules, Syringes)</label>
+            <button type="button" onclick="addSubComponentField()" class="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold">+ Add Sub-Component</button>
+          </div>
+          <div id="eq-subs-container" class="space-y-2"></div>
+        </div>
+
+        <div class="pt-4 border-t border-slate-200 flex justify-end gap-2">
+          <button type="button" onclick="closeEquipmentModal()" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold">Cancel</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-ksau-600 hover:bg-ksau-700 text-white text-xs font-bold shadow">Save Equipment Record</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL 4: LOG CONTINGENCY / MAINTENANCE ISSUE ================= -->
+  <div id="contingency-modal" class="fixed inset-0 z-50 hidden bg-slate-900/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200 animate-fade-up">
+      <div class="bg-ksau-800 text-white px-6 py-4 flex items-center justify-between border-b-2 border-ksau-goldbright">
+        <div class="flex items-center gap-2.5">
+          <i data-lucide="alert-octagon" class="w-5 h-5 text-ksau-goldbright"></i>
+          <h3 class="text-sm font-extrabold">Log Contingency / Maintenance Action</h3>
+        </div>
+        <button onclick="closeContingencyModal()" class="p-1.5 rounded-lg bg-white/10 hover:bg-white/20">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <form id="contingency-form" onsubmit="saveContingencyIssue(event)" class="p-6 space-y-4">
+        <div>
+          <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Target Medical Device *</label>
+          <select id="log-device-id" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold"></select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Updated Device Status *</label>
+          <select id="log-new-status" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold">
+            <option value="Contingency / Fault">Contingency / Fault (Backup Activated)</option>
+            <option value="Maintenance">Under Maintenance</option>
+            <option value="Operational">Resolved — Operational</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Fault / Inspection Observation *</label>
+          <textarea id="log-issue" required rows="2" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs" placeholder="Describe the fault or why the device can't be used..."></textarea>
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Contingency Action Plan / Backup Unit Assigned *</label>
+          <textarea id="log-action" required rows="2" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs" placeholder="Specify backup HTMS unit allocated or corrective action taken..."></textarea>
+        </div>
+        <div class="pt-3 border-t border-slate-200 flex justify-end gap-2">
+          <button type="button" onclick="closeContingencyModal()" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold">Cancel</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-ksau-600 hover:bg-ksau-700 text-white text-xs font-bold shadow">Record Official Log</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL 5: CREATE NEW LAB ================= -->
+  <div id="lab-modal" class="fixed inset-0 z-50 hidden bg-slate-900/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-200 animate-fade-up">
+      <div class="bg-ksau-800 text-white px-6 py-4 flex items-center justify-between border-b-2 border-ksau-goldbright">
+        <div class="flex items-center gap-2.5">
+          <i data-lucide="building-2" class="w-5 h-5 text-ksau-goldbright"></i>
+          <h3 class="text-sm font-extrabold">Create New Skills Laboratory</h3>
+        </div>
+        <button onclick="closeLabModal()" class="p-1.5 rounded-lg bg-white/10 hover:bg-white/20">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <form onsubmit="saveNewLab(event)" class="p-6 space-y-4">
+        <div>
+          <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Lab Room Code *</label>
+          <input type="text" id="new-lab-code" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono uppercase" placeholder="e.g. CM-01-165" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Lab Name *</label>
+          <input type="text" id="new-lab-name" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold" placeholder="e.g. Critical Care Simulation Lab" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1">College / Department *</label>
+          <input type="text" id="new-lab-college" required value="Applied Medical Science - Male" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold" />
+        </div>
+        <div class="pt-3 border-t border-slate-200 flex justify-end gap-2">
+          <button type="button" onclick="closeLabModal()" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold">Cancel</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-ksau-600 hover:bg-ksau-700 text-white text-xs font-bold shadow">Create Laboratory</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL 8: RECOVERY CODE (SHOWN ONCE TO THE MASTER ADMINISTRATOR) ================= -->
+  <div id="recovery-modal" class="fixed inset-0 z-50 hidden bg-slate-900/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden border border-slate-200 animate-fade-up">
+      <div class="bg-ksau-800 text-white px-6 py-4 flex items-center gap-2.5 border-b-2 border-ksau-goldbright">
+        <i data-lucide="shield-check" class="w-5 h-5 text-ksau-goldbright"></i>
+        <h3 id="rc-title" class="text-sm font-extrabold">Recovery code</h3>
+      </div>
+      <div class="p-6 space-y-4 text-xs text-slate-700">
+        <p>Give this recovery code to the faculty member privately. They'll need it, with their username <strong id="rc-user" class="font-mono"></strong>, to reset their password on the <strong>Forgot your password?</strong> page. It's shown only once, and any earlier code stops working.</p>
+        <p id="rc-code" class="text-center text-2xl font-mono font-extrabold tracking-widest text-ksau-800 bg-ksau-50 border border-ksau-200 rounded-xl py-3 select-all"></p>
+        <div class="pt-3 border-t border-slate-200 flex justify-end gap-2">
+          <button type="button" onclick="copyRecoveryCode()" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold">Copy</button>
+          <button type="button" onclick="closeRecoveryModal()" class="px-5 py-2 rounded-xl bg-ksau-600 hover:bg-ksau-700 text-white text-xs font-bold shadow">Done</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL 7: CHANGE MY PASSWORD ================= -->
+  <div id="password-modal" class="fixed inset-0 z-50 hidden bg-slate-900/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden border border-slate-200 animate-fade-up">
+      <div class="bg-ksau-800 text-white px-6 py-4 flex items-center justify-between border-b-2 border-ksau-goldbright">
+        <div class="flex items-center gap-2.5">
+          <i data-lucide="key-round" class="w-5 h-5 text-ksau-goldbright"></i>
+          <h3 class="text-sm font-extrabold">Change My Password</h3>
+        </div>
+        <button onclick="closePasswordModal()" class="p-1.5 rounded-lg bg-white/10 hover:bg-white/20">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <form onsubmit="saveNewPassword(event)" class="p-6 space-y-4">
+        <div>
+          <label for="pw-current" class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Current Password *</label>
+          <input type="password" id="pw-current" required autocomplete="current-password" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono" />
+        </div>
+        <div>
+          <label for="pw-new" class="block text-[11px] font-bold uppercase text-slate-600 mb-1">New Password * <span class="normal-case font-medium text-slate-400">(at least 8 characters)</span></label>
+          <input type="password" id="pw-new" required minlength="8" autocomplete="new-password" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono" />
+        </div>
+        <div>
+          <label for="pw-confirm" class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Confirm New Password *</label>
+          <input type="password" id="pw-confirm" required autocomplete="new-password" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono" />
+        </div>
+        <p id="pw-error" class="hidden text-xs font-semibold text-rose-600"></p>
+        <div class="pt-3 border-t border-slate-200 flex justify-end gap-2">
+          <button type="button" onclick="closePasswordModal()" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold">Cancel</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-ksau-600 hover:bg-ksau-700 text-white text-xs font-bold shadow">Save New Password</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL 6: CREATE STAFF ACCOUNT & PERMISSIONS ================= -->
+  <div id="staff-modal" class="fixed inset-0 z-50 hidden bg-slate-900/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-200 animate-fade-up">
+      <div class="bg-ksau-800 text-white px-6 py-4 flex items-center justify-between border-b-2 border-ksau-goldbright">
+        <div class="flex items-center gap-2.5">
+          <i data-lucide="user-plus" class="w-5 h-5 text-ksau-goldbright"></i>
+          <h3 class="text-sm font-extrabold">Create Staff Account & Permissions</h3>
+        </div>
+        <button onclick="closeStaffModal()" class="p-1.5 rounded-lg bg-white/10 hover:bg-white/20">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <form onsubmit="saveStaffAccount(event)" class="p-6 space-y-4">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Full Name *</label>
+            <input type="text" id="staff-name" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold" placeholder="Dr. Ahmed Al-Otaibi" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Badge No. *</label>
+            <input type="text" id="staff-badge" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono" placeholder="71204" />
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Login Username *</label>
+            <input type="text" id="staff-user" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono" placeholder="aalotaibi" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Login Password *</label>
+            <input type="text" id="staff-pass" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono" placeholder="Set password" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold uppercase text-slate-600 mb-1">Title / Role Label *</label>
+          <input type="text" id="staff-role" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold" placeholder="Faculty Member, Respiratory Therapy Program" />
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+          <p class="text-[11px] font-extrabold uppercase text-slate-700">Access & Editing Permissions</p>
+          <label class="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer">
+            <input type="checkbox" id="perm-edit-eq" checked class="rounded text-ksau-600 focus:ring-ksau-600" />
+            <span>Can Add & Edit Medical Equipment</span>
+          </label>
+          <label class="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer">
+            <input type="checkbox" id="perm-log" checked class="rounded text-ksau-600 focus:ring-ksau-600" />
+            <span>Can Log Contingency & Maintenance Issues</span>
+          </label>
+          <label class="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer">
+            <input type="checkbox" id="perm-labs" class="rounded text-ksau-600 focus:ring-ksau-600" />
+            <span>Can Create & Manage Laboratories</span>
+          </label>
+          <p class="text-[11px] text-slate-500">Only the master administrator can create or remove staff accounts.</p>
+        </div>
+
+        <div class="pt-3 border-t border-slate-200 flex justify-end gap-2">
+          <button type="button" onclick="closeStaffModal()" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold">Cancel</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-ksau-600 hover:bg-ksau-700 text-white text-xs font-bold shadow">Save Staff Credentials</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast-box" class="fixed bottom-5 right-5 z-50 hidden bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-2xl border border-white/15 flex items-center gap-2.5 text-xs font-bold">
+    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+    <span id="toast-text">Action completed</span>
+  </div>
+
+  <!-- ================= APPLICATION LOGIC & COMPLETE PDF DATASET ================= -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
